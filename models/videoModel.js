@@ -25,10 +25,12 @@ const videoSchema = new mongoose.Schema(
       ref: "Channel",
     },
     updatedAt: Date,
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-    },
+    category: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     view: Number,
   },
   {
