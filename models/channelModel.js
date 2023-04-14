@@ -20,7 +20,7 @@ const channelSchema = new mongoose.Schema({
     default:
       "https://png.pngtree.com/png-clipart/20200701/original/pngtree-default-avatar-png-image_5407175.jpg",
   },
-  imageCover: {
+  thumbnail: {
     type: String,
     default:
       "https://png.pngtree.com/png-clipart/20200701/original/pngtree-default-avatar-png-image_5407175.jpg",
@@ -59,9 +59,7 @@ const channelSchema = new mongoose.Schema({
     enum: ["active", "verify", "ban"],
     default: "verify",
   },
-  dateOfBirth: String,
-  gender: String,
-  phone: String,
+  description: String,
 });
 channelSchema.index({ "$**": "text" });
 

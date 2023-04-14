@@ -15,6 +15,7 @@ const globalErrorHandler = require("./controllers/errorController");
 const channelRouter = require("./routes/channelRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
 const videoRouter = require("./routes/videoRoutes");
+const playListRouter = require("./routes/playListRoutes");
 
 const app = express();
 // Add headers before the routes are defined
@@ -74,6 +75,7 @@ app.use((req, res, next) => {
 app.use("/api/v1/channels", channelRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/playlists", playListRouter);
 
 // const __variableOfChoice = path.resolve();
 // app.use(express.static(path.join(__variableOfChoice, "/fe/dist")));

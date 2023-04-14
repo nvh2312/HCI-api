@@ -9,12 +9,9 @@ const videoSchema = new mongoose.Schema(
       maxlength: [200, "Tiêu đề video tối đa 200 kí tự"],
       minlength: [2, "Tiêu đề video tối thiểu 2 kí tự"],
     },
-    description: {
-      type: String,
-      required: [true, "Mô tả video không thể để trống"],
-    },
-    imageCover: String,
-    linkVideo: String,
+    description: String,
+    thumbnail: String,
+    video: String,
     like: [],
     createdAt: {
       type: Date,
@@ -31,7 +28,13 @@ const videoSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
+    duration: String,
     view: Number,
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
+    playList: [],
   },
   {
     toJSON: { virtuals: true },
