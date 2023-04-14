@@ -13,6 +13,8 @@ const compression = require("compression");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const channelRouter = require("./routes/channelRoutes");
+const categoryRouter = require("./routes/categoryRoutes");
+const videoRouter = require("./routes/videoRoutes");
 
 const app = express();
 // Add headers before the routes are defined
@@ -70,6 +72,8 @@ app.use((req, res, next) => {
 
 // 3) ROUTES
 app.use("/api/v1/channels", channelRouter);
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/videos", videoRouter);
 
 // const __variableOfChoice = path.resolve();
 // app.use(express.static(path.join(__variableOfChoice, "/fe/dist")));

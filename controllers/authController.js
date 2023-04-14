@@ -310,7 +310,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     token,
     process.env.ACCESS_TOKEN_SECRET
   );
-  console.log(decoded);
   // 3) Check if channel still exists
   const currentChannel = await Channel.findById(decoded.channelId);
 
