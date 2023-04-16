@@ -43,10 +43,8 @@ exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
     res.status(201).json({
-      status: "success",
-      data: {
-        data: doc,
-      },
+      message: "success",
+      doc,
     });
   });
 
@@ -60,9 +58,7 @@ exports.getOne = (Model, popOptions) =>
     }
     res.status(200).json({
       status: "success",
-      data: {
-        data: doc,
-      },
+      doc,
     });
   });
 
@@ -84,8 +80,6 @@ exports.getAll = (Model) =>
     res.status(200).json({
       status: "success",
       results: doc.length,
-      data: {
-        data: doc,
-      },
+      doc,
     });
   });
