@@ -1,6 +1,6 @@
 const express = require("express");
 const authController = require("../controllers/authController");
-// const channel = require("../controllers/channelController");
+const channelController = require("../controllers/channelController");
 
 const router = express.Router();
 router.post("/signup", authController.signup);
@@ -12,4 +12,12 @@ router.post(
 );
 router.post("/verify", authController.verifyChannel);
 router.post("/get-otp", authController.sendMailVerify);
+
+router.use(authController.protect);
+
+router.patch("/updateMyPassword", authController.updatePassword);
+router.get("/me", channelController.getMe, channelController.getChannel);
+router.patch("/updateMe", channelController.updateMe);
+router.delete("/deleteMe", channelController.deleteMe);
+
 module.exports = router;

@@ -453,7 +453,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get channel from collection
-  const channel = await channel.findById(req.channel.id).select("+password");
+  const channel = await Channel.findById(req.channel.id).select("+password");
 
   // 2) Check if POSTed current password is correct
   if (

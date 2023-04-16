@@ -23,8 +23,7 @@ const handleValidationErrorDB = (err) => {
 const handleJWTError = () =>
   new AppError("Token không hợp lệ. Vui lòng đăng nhập lại!", 401);
 
-const handleJWTExpiredError = () =>
-  new AppError("Token của bạn đã hết han. Vui lòng đăng nhập lại", 401);
+const handleJWTExpiredError = () => new AppError("TokenExpiredError", 401);
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
