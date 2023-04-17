@@ -22,7 +22,7 @@ exports.createVideo = catchAsync(async (req, res, next) => {
   });
 });
 exports.updateVideo = catchAsync(async (req, res, next) => {
-  const videoId = req.body.id;
+  const videoId = req.params.id;
   const doc = await Video.findById(videoId);
   // remove video from previous array playlist
   if (doc.playList) {

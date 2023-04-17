@@ -62,8 +62,8 @@ exports.validateRefreshToken = catchAsync(async (req, res, next) => {
     process.env.REFRESH_TOKEN_SECRET
   );
   const tokenExists = await RefreshToken.exists({
-    _id: decodedToken.tokenId,
-    owner: decodedToken.channelId,
+    _id: decoded.tokenId,
+    channelId: decoded.channelId,
   });
   if (!tokenExists) {
     return next(new AppError("Unauthorised!!!", 401));

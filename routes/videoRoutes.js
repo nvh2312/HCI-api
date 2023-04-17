@@ -17,7 +17,11 @@ router
 router
   .route("/:id")
   .get(videoController.getVideo)
-  .patch(authController.restrictTo("user"), videoController.updateVideo)
+  .patch(
+    authController.protect,
+    authController.restrictTo("user"),
+    videoController.updateVideo
+  )
   .delete(
     authController.restrictTo("user", "admin"),
     videoController.deleteVideo
