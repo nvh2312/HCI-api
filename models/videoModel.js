@@ -29,7 +29,10 @@ const videoSchema = new mongoose.Schema(
       },
     ],
     duration: String,
-    view: Number,
+    view: {
+      type: Number,
+      default: 0,
+    },
     isHidden: {
       type: Boolean,
       default: false,

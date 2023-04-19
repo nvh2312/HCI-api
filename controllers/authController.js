@@ -12,10 +12,10 @@ const signAccessToken = (channelId) => {
     expiresIn: process.env.TOKEN_EXPIRES_IN,
   });
 };
-const signRefreshToken = (channelId, refreshTokenId) => {
+const signRefreshToken = (channel, refreshTokenId) => {
   return jwt.sign(
     {
-      channelId,
+      channel,
       tokenId: refreshTokenId,
     },
     process.env.REFRESH_TOKEN_SECRET,
@@ -26,18 +26,18 @@ const signRefreshToken = (channelId, refreshTokenId) => {
 };
 exports.refreshAccessToken = catchAsync(async (req, res, next) => {
   const currentRefreshToken = req.currentRefreshToken;
-  const refreshTokenDoc = RefreshToken({
-    channelId: currentRefreshToken.channelId,
+  const refreshTokenDoc = await RefreshToken({
+    channel: currentRefreshToken.channel,
   });
 
   await refreshTokenDoc.save();
   await RefreshToken.deleteOne({ _id: currentRefreshToken.tokenId });
 
   const refreshToken = signRefreshToken(
-    currentRefreshToken.channelId,
+    currentRefreshToken.channel,
     refreshTokenDoc.id
   );
-  const accessToken = signAccessToken(currentRefreshToken.channelId);
+  const accessToken = signAccessToken(currentRefreshToken.channel);
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
@@ -63,7 +63,7 @@ exports.validateRefreshToken = catchAsync(async (req, res, next) => {
   );
   const tokenExists = await RefreshToken.exists({
     _id: decoded.tokenId,
-    channelId: decoded.channelId,
+    channel: decoded.channel,
   });
   if (!tokenExists) {
     return next(new AppError("Unauthorised!!!", 401));
@@ -74,7 +74,7 @@ exports.validateRefreshToken = catchAsync(async (req, res, next) => {
 
 const createSendToken = async (channel, statusCode, res) => {
   const refreshTokenDoc = RefreshToken({
-    channelId: channel.id,
+    channel: channel.id,
   });
   await refreshTokenDoc.save();
   const token = signAccessToken(channel.id);

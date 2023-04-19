@@ -2,7 +2,7 @@ const express = require("express");
 const playListController = require("./../controllers/playListController");
 const authController = require("./../controllers/authController");
 const factory = require("./../controllers/handlerFactory");
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
   .route("/")

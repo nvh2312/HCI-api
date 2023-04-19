@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const watchHistorySchema = new mongoose.Schema(
+const favoriteVideoSchema = new mongoose.Schema(
   {
     channel: {
       type: mongoose.Schema.Types.ObjectId,
@@ -20,6 +20,6 @@ const watchHistorySchema = new mongoose.Schema(
   }
 );
 
-const WatchHistory = mongoose.model("WatchHistory", watchHistorySchema);
+const FavoriteVideo = mongoose.model("FavoriteVideo", favoriteVideoSchema);
 
-module.exports = WatchHistory;
+module.exports = FavoriteVideo;

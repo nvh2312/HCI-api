@@ -1,6 +1,7 @@
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
+const Video = require("./../models/videoModel");
 //define storage for the images
 exports.setChannel = catchAsync(async (req, res, next) => {
   req.body.channel = req.channel;
@@ -54,6 +55,10 @@ exports.getOne = (Model, popOptions) =>
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
     }
+    if (Model === Video) {
+      doc.view++;
+      await doc.save();
+    }
     res.status(200).json({
       status: "success",
       data: doc,
@@ -64,7 +69,8 @@ exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET reviews on tour (hack)
     let filter = {};
-    if (req.params.blogId) filter = { blog: req.params.blogId };
+    if (req.params.videoId) filter = { video: req.params.videoId };
+    if (req.params.channelId) filter = { channel: req.params.channelId };
 
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()

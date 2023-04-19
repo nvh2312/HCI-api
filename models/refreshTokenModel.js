@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const refreshTokenSchema = new mongoose.Schema({
-  channelId: {
+  channel: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "Channel",
