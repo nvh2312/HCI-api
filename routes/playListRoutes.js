@@ -6,7 +6,7 @@ const router = express.Router({ mergeParams: true });
 
 router
   .route("/")
-  .get(playListController.getAllPlayLists)
+  .get(authController.isLoggedIn, playListController.getAllPlayLists)
   .post(
     authController.protect,
     authController.restrictTo("user"),
@@ -16,8 +16,13 @@ router
 
 router
   .route("/:id")
-  .get(playListController.getPlayList)
-  .patch(authController.restrictTo("user"), playListController.updatePlayList)
+  .get(authController.isLoggedIn, playListController.getPlayList)
+  .patch(
+    authController.protect,
+    authController.restrictTo("user"),
+    playListController.isOwner,
+    playListController.updatePlayList
+  )
   .delete(authController.restrictTo("user"), playListController.deletePlayList);
 
 module.exports = router;

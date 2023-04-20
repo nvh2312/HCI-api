@@ -2,6 +2,9 @@ const Channel = require("./../models/channelModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const factory = require("./handlerFactory");
+const PlayList = require("../models/playListModel");
+const Comment = require("../models/commentModel");
+const Video = require("../models/videoModel");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -63,3 +66,27 @@ exports.createChannel = (req, res) => {
   });
 };
 exports.getChannel = factory.getOne(Channel);
+exports.getAllChannels = factory.getAll(Channel);
+exports.banChannel = catchAsync(async (req, res, next) => {
+  const channelId = req.body.channel;
+  const action = req.body.action;
+  const channelDoc = await Channel.findOneAndUpdate(
+    { _id: channelId },
+    { active: action },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  if (!channelDoc) {
+    return next(new AppError("Not found this channel", 404));
+  }
+  const isHidden = action === "ban" ? true : false;
+  await PlayList.updateMany({ channel: channelId }, { $set: { isHidden } });
+  await Video.updateMany({ channel: channelId }, { $set: { isHidden } });
+  await Comment.updateMany({ channel: channelId }, { $set: { isHidden } });
+  res.status(200).json({
+    message: "success",
+    data: channelDoc,
+  });
+});

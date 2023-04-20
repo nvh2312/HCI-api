@@ -26,7 +26,7 @@ const signRefreshToken = (channel, refreshTokenId) => {
 };
 exports.refreshAccessToken = catchAsync(async (req, res, next) => {
   const currentRefreshToken = req.currentRefreshToken;
-  const refreshTokenDoc = await RefreshToken({
+  const refreshTokenDoc = RefreshToken({
     channel: currentRefreshToken.channel,
   });
 
@@ -101,27 +101,12 @@ const createSendToken = async (channel, statusCode, res) => {
 };
 exports.sendMailVerify = catchAsync(async (req, res, next) => {
   const channel = await Channel.findOne({ email: req.body.email });
-  console.log(channel);
+  if (!channel) return next(new AppError("Not found this channel.", 404));
   // 1) create token to verify
   const verifyToken = channel.createVerifyToken();
   await channel.save({ validateBeforeSave: false });
-  // // 2) create cookie to client
-  // const refreshTokenDoc = RefreshToken({
-  //   channelId: channel.id,
-  // });
-  // await refreshTokenDoc.save();
-  // const token = signAccessToken(channel.id);
-  // const refreshToken = signRefreshToken(channel.id, refreshTokenDoc.id);
-  // const cookieOptions = {
-  //   expires: new Date(
-  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  // };
-  // if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
 
-  // res.cookie("jwt", refreshToken, cookieOptions);
-  // 3) Send it to channel's email
+  // 2) Send it to channel's email
   const verifyURL = `https://youtube.onrender.com/verify`;
   const message = `Bạn là chủ tài khoản? Vui lòng xác nhận tài khoản tại:  ${verifyURL}.\nMã xác nhận: ${verifyToken}\n.Nếu không phải, vui lòng bỏ qua mail này!`;
   channel.password = undefined;
@@ -135,8 +120,6 @@ exports.sendMailVerify = catchAsync(async (req, res, next) => {
     res.status(201).json({
       data: {
         user: channel,
-        // access_token: token,
-        // refresh_token: refreshToken,
       },
       message: "Token sent to email!",
     });
@@ -148,23 +131,7 @@ const sendVerifyToken = async (channel, statusCode, res) => {
   // 1) create token to verify
   const verifyToken = channel.createVerifyToken();
   await channel.save({ validateBeforeSave: false });
-  // // 2) create cookie to client
-  // const refreshTokenDoc = RefreshToken({
-  //   channelId: channel.id,
-  // });
-  // await refreshTokenDoc.save();
-  // const token = signAccessToken(channel.id);
-  // const refreshToken = signRefreshToken(channel.id, refreshTokenDoc.id);
-  // const cookieOptions = {
-  //   expires: new Date(
-  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  // };
-  // if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-
-  // res.cookie("jwt", refreshToken, cookieOptions);
-  // 3) Send it to channel's email
+  // 2) Send it to channel's email
   const verifyURL = `https://youtube.onrender.com/verify`;
   const message = `Bạn là chủ tài khoản? Vui lòng xác nhận tài khoản tại:  ${verifyURL}.\nMã xác nhận: ${verifyToken}\n.Nếu không phải, vui lòng bỏ qua mail này!`;
   channel.password = undefined;
@@ -178,8 +145,6 @@ const sendVerifyToken = async (channel, statusCode, res) => {
     res.status(statusCode).json({
       data: {
         user: channel,
-        // access_token: token,
-        // refresh_token: refreshToken,
       },
       message: "Token sent to email!",
     });
@@ -189,7 +154,6 @@ const sendVerifyToken = async (channel, statusCode, res) => {
 };
 
 exports.verifyChannel = catchAsync(async (req, res, next) => {
-  // 1) Get channel based on the token
   const hashedToken = crypto
     .createHash("sha256")
     .update(req.body.encode)
@@ -198,23 +162,15 @@ exports.verifyChannel = catchAsync(async (req, res, next) => {
     email: req.body.email,
     channelVerifyToken: hashedToken,
   });
-  // 2) If token true, verify this channel
+
   if (!channel) {
     return next(new AppError("Mã xác nhận không hợp lệ hoặc đã hết hạn", 422));
   }
   channel.active = "active";
   channel.channelVerifyToken = undefined;
   await channel.save({ validateBeforeSave: false });
-  // 3) Update changedPasswordAt property for the channel
-  // 4) Log the channel in, send JWT
-  createSendToken(channel, 200, res);
 
-  // res.status(200).json({
-  //   message: "success",
-  //   data: {
-  //     channel,
-  //   },
-  // });
+  createSendToken(channel, 200, res);
 });
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -229,10 +185,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
   sendVerifyToken(newChannel, 201, res);
-  // res.status(201).json({
-  //   message: "create user successfully",
-  //   data: { user: newChannel },
-  // });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -253,29 +205,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   // 3) Check if channel not verify, send code to gmail
   if (channel.active === "verify") {
-    // 1) create token to verify
-    const verifyToken = channel.createVerifyToken();
-    await channel.save({ validateBeforeSave: false });
-    // 3) Send it to channel's email
-    const verifyURL = `https://youtube.onrender.com/verify`;
-    const message = `Bạn là chủ tài khoản? Vui lòng xác nhận tài khoản tại:  ${verifyURL}.\nMã xác nhận: ${verifyToken}\n.Nếu không phải, vui lòng bỏ qua mail này!`;
-    channel.password = undefined;
-    console.log(verifyToken);
-    try {
-      // await sendEmail({
-      //   email: channel.email,
-      //   subject: "verify channel",
-      //   message,
-      // });
-      res.status(201).json({
-        data: {
-          user: channel,
-        },
-        message: "Token sent to email!",
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    sendVerifyToken(channel, 201, res);
   } else if (channel.active === "ban")
     return next(new AppError("Tài khoản đã bị khóa", 403));
   // 4) If everything ok, send token to client
@@ -287,15 +217,10 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   let token;
+  let refreshToken;
   try {
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    } else if (req.cookies.jwt) {
-      token = req.cookies.jwt;
-    }
+    token = req.headers.authorization.split(" ")[1];
+    refreshToken = req.cookies.jwt;
   } catch (error) {
     return next(
       new AppError(
@@ -304,7 +229,7 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
-  // console.log(req.cookies.jwt);
+
   // 2) Verification token
   const decoded = await promisify(jwt.verify)(
     token,
@@ -337,16 +262,15 @@ exports.isLoggedIn = async (req, res, next) => {
       // 1) verify token
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
-        process.env.JWT_SECRET
+        process.env.REFRESH_TOKEN_SECRET
       );
-
       // 2) Check if channel still exists
-      const currentchannel = await channel.findById(decoded.id);
+      const currentchannel = await Channel.findById(decoded.channel);
       if (!currentchannel) {
         return next();
       }
       // THERE IS A LOGGED IN channel
-      res.locals.channel = currentchannel;
+      req.channel = currentchannel;
       return next();
     } catch (err) {
       return next();
@@ -357,7 +281,7 @@ exports.isLoggedIn = async (req, res, next) => {
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (req.channel == undefined || !roles.includes(req.channel.role)) {
+    if (!req.channel || !roles.includes(req.channel.role)) {
       return next(new AppError("Bạn không có quyền thực hiện", 403));
     }
     next();
@@ -366,7 +290,9 @@ exports.restrictTo = (...roles) => {
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get channel based on POSTed email
-  const channel = await channel.findOne({ email: req.body.email });
+  const channel = await Channel.findOne({
+    email: req.body.email,
+  });
   if (!channel) {
     return next(
       new AppError(
@@ -375,9 +301,13 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       )
     );
   }
+  if (channel.active === "ban") {
+    return next(new AppError("Tài khoản này đã bị khóa", 404));
+  }
 
   // 2) Generate the random reset token
   const resetToken = channel.createPasswordResetToken();
+  console.log("ok");
   await channel.save({ validateBeforeSave: false });
 
   // 3) Send it to channel's email
@@ -392,7 +322,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     //   message,
     // });
 
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "Token sent to email!",
     });
@@ -403,9 +333,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await channel.save({ validateBeforeSave: false });
 
     return next(
-      new AppError(
-        "Đã có lỗi xảy ra trong quá trình gửi mail. Vui lòng thực hiện lại sau!"
-      ),
+      new AppError("Đã có lỗi xảy ra. Vui lòng thực hiện lại sau!"),
       500
     );
   }
@@ -414,9 +342,9 @@ exports.verifyResetPass = catchAsync(async (req, res, next) => {
   // 1) Get channel based on the token
   const hashedToken = crypto
     .createHash("sha256")
-    .update(req.body.token)
+    .update(req.body.encode)
     .digest("hex");
-  const channel = await channel.findOne({
+  const channel = await Channel.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });
@@ -432,13 +360,13 @@ exports.verifyResetPass = catchAsync(async (req, res, next) => {
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1) Get channel based on the token
-  const channel = await channel.findOne({
+  const channel = await Channel.findOne({
     passwordResetToken: req.params.token,
     passwordResetExpires: { $gt: Date.now() },
   });
   // 2) If token has not expired, and there is channel, set the new password
   if (!channel) {
-    return next(new AppError("oken không hợp lệ hoặc đã hết hạn", 400));
+    return next(new AppError("Token không hợp lệ hoặc đã hết hạn", 400));
   }
   channel.password = req.body.password;
   channel.passwordConfirm = req.body.passwordConfirm;
@@ -477,19 +405,38 @@ exports.logout = (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
-  res.status(200).json({ status: "success" });
+  return res.status(200).json({ status: "success" });
 };
-
+exports.logoutAll = catchAsync(async (req, res) => {
+  const refreshToken = req.currentRefreshToken;
+  await RefreshToken.deleteMany({ channel: refreshToken.channel });
+  return res.status(200).json({ status: "success" });
+});
 exports.googleLogin = catchAsync(async (req, res) => {
-  const email = req.body.email;
+  const { email, displayName } = req.body.channel;
   // 1) Check if channel exists
-  const data = await channel.findOne({ email });
+  const data = await Channel.findOne({ email });
   // 2) Check if channel exist
-  if (data.role == "admin") {
-    createSendToken(data, 200, res);
+  if (!data) {
+    const password = email + process.env.ACCESS_TOKEN_SECRET;
+    const inform = {
+      email,
+      password,
+      passwordConfirm: password,
+      fullName: displayName,
+      active: "active",
+    };
+    const newChannel = await Channel.create(inform);
+    createSendToken(newChannel, 201, res);
   }
   // 3) If channel does not exist, create one
   else {
-    res.status(400).json({ message: "Tài khoản này không được phép truy cập" });
+    if (data.active === "ban")
+      return next(new AppError("Tài khoản của bạn đã bị ban.", 401));
+    if (data.active === "verify") {
+      data.active = "active";
+      await data.save({ validateBeforeSave: false });
+    }
+    createSendToken(data, 200, res);
   }
 });

@@ -21,6 +21,10 @@ const playListSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },

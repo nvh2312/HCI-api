@@ -1,7 +1,7 @@
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
-const Video = require("./../models/videoModel");
+const Comment = require("../models/commentModel");
 //define storage for the images
 exports.setChannel = catchAsync(async (req, res, next) => {
   req.body.channel = req.channel;
@@ -23,6 +23,7 @@ exports.deleteOne = (Model) =>
 
 exports.updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
+    if (Model === Comment) req.body.updatedAt = Date.now();
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -49,15 +50,17 @@ exports.createOne = (Model) =>
 
 exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
+    let filter = {};
+    if (!req.channel || req.channel.role === "user") {
+      filter.isHidden = { $ne: true };
+      filter.active = { $nin: ["ban", "verify"] };
+    }
+    let query = Model.findById(req.params.id).where(filter);
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
+    console.log(doc);
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
-    }
-    if (Model === Video) {
-      doc.view++;
-      await doc.save();
     }
     res.status(200).json({
       status: "success",
@@ -67,11 +70,15 @@ exports.getOne = (Model, popOptions) =>
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    // To allow for nested GET reviews on tour (hack)
+    // To allow for nested GET
     let filter = {};
     if (req.params.videoId) filter = { video: req.params.videoId };
     if (req.params.channelId) filter = { channel: req.params.channelId };
-
+    if (!req.channel || req.channel.role === "user") {
+      filter.isHidden = { $ne: true };
+      filter.active = { $nin: ["ban", "verify"] };
+    }
+    if (Model === Comment) filter.parent = null;
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
@@ -86,4 +93,20 @@ exports.getAll = (Model) =>
       results: doc.length,
       data: doc,
     });
+  });
+
+exports.isOwner = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findById(req.params.id).where({
+      isHidden: { $ne: true },
+      active: { $nin: ["ban", "verify"] },
+    });
+    if (!doc) {
+      return next(new AppError("No document found with that ID", 404));
+    }
+    if (doc.channel.id !== req.channel.id) {
+      return next(new AppError("Not permission", 404));
+    }
+    req.doc = doc;
+    next();
   });

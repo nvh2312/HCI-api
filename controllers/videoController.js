@@ -2,9 +2,44 @@ const Video = require("./../models/videoModel");
 const PlayList = require("./../models/playListModel");
 const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
+const View = require("./../models/viewModel");
 
 exports.getAllVideos = factory.getAll(Video);
-exports.getVideo = factory.getOne(Video);
+// exports.getVideo = factory.getOne(Video);
+exports.updateWatchedTime = catchAsync(async (req, res, next) => {
+  const viewDoc = await View.findById(req.params.id);
+  console.log(req.params.id);
+  viewDoc.watchedTime = req.body.watchedTime;
+  // const watchedHistory =
+  await viewDoc.save({ validateBeforeSave: false });
+  res.status(200).json({
+    status: "success",
+    data: {
+      view: viewDoc,
+    },
+  });
+});
+exports.getVideo = catchAsync(async (req, res, next) => {
+  let query = Video.findById(req.params.id);
+  const doc = await query;
+  if (!doc) {
+    return next(new AppError("No document found with that ID", 404));
+  }
+  doc.view++;
+  await doc.save({ validateBeforeSave: false });
+  const view = View({
+    video: req.params.id,
+  });
+  await view.save();
+  res.status(200).json({
+    status: "success",
+    data: {
+      video: doc,
+      view,
+    },
+  });
+});
 exports.createVideo = catchAsync(async (req, res, next) => {
   const doc = await Video.create(req.body);
   if (req.body.playList) {

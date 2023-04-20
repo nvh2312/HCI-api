@@ -23,7 +23,8 @@ const handleValidationErrorDB = (err) => {
 const handleJWTError = () =>
   new AppError("Token không hợp lệ. Vui lòng đăng nhập lại!", 401);
 
-const handleJWTExpiredError = () => new AppError("TokenExpiredError", 401);
+const handleATExpiredError = () => new AppError("TokenExpiredError", 401);
+const handleRTExpiredError = () => new AppError("Logged out", 401);
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -60,7 +61,8 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development") {
-    if (err.name === "TokenExpiredError") err = handleJWTExpiredError();
+    if (err.name === "TokenExpiredError") err = handleATExpiredError();
+    if (err.name === "JsonWebTokenError") err = handleRTExpiredError();
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = { ...err };

@@ -7,16 +7,12 @@ const CommentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Bình luận không thể để trống!"],
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+
     video: {
       type: mongoose.Schema.ObjectId,
       ref: "Video",
       required: [true, "Vui lòng cung cấp video được Bình luận."],
     },
-    updateAt: Date,
     channel: {
       type: mongoose.Schema.ObjectId,
       ref: "Channel",
@@ -34,6 +30,12 @@ const CommentSchema = new mongoose.Schema(
         ref: "Comment",
       },
     ],
+    isHidden: { type: Boolean, default: false },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: Date,
   },
   {
     toJSON: { virtuals: true },
