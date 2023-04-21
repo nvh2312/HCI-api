@@ -1,0 +1,16 @@
+const express = require("express");
+const subscriberController = require("./../controllers/subscriberController");
+const authController = require("./../controllers/authController");
+const router = express.Router({ mergeParams: true });
+
+router
+  .route("/")
+  .get(subscriberController.getAllSubscribers)
+  .post(
+    authController.protect,
+    authController.restrictTo("user"),
+    subscriberController.createSubscriber
+  )
+  .delete(authController.protect, subscriberController.deleteSubscriber);
+
+module.exports = router;

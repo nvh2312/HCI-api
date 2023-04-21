@@ -19,7 +19,13 @@ const favoriteVideoSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
+favoriteVideoSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "video",
+    select: "-__v",
+  });
+  next();
+});
 const FavoriteVideo = mongoose.model("FavoriteVideo", favoriteVideoSchema);
 
 module.exports = FavoriteVideo;

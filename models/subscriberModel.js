@@ -19,7 +19,13 @@ const subscriberModel = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
+subscriberModel.pre(/^find/, function (next) {
+  this.populate({
+    path: "subscriber",
+    select: "-__v",
+  });
+  next();
+});
 const Subscriber = mongoose.model("Subcriber", subscriberModel);
 
 module.exports = Subscriber;

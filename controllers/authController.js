@@ -241,6 +241,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentChannel) {
     return next(new AppError("Token người dùng không còn tồn tại.", 401));
   }
+  if (currentChannel.active === "ban") {
+    res.cookie("jwt", "loggedout", {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+    return next(new AppError("Tài khoản của bạn đang bị khóa", 403));
+  }
 
   // 4) Check if channel changed password after the token was issued
   if (currentChannel.changedPasswordAfter(decoded.iat)) {

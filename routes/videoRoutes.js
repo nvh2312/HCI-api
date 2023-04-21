@@ -25,11 +25,14 @@ router
   .get(videoController.getVideo)
   .patch(
     authController.protect,
-    authController.restrictTo("user"),
+    authController.restrictTo("user", "admin"),
+    videoController.isOwner,
     videoController.updateVideo
   )
   .delete(
+    authController.protect,
     authController.restrictTo("user", "admin"),
+    videoController.isOwner,
     videoController.deleteVideo
   );
 

@@ -3,12 +3,16 @@ const authController = require("../controllers/authController");
 const channelController = require("../controllers/channelController");
 const playlistRouter = require("./../routes/playListRoutes");
 const videoRouter = require("./../routes/videoRoutes");
+const subscriberRouter = require("./../routes/subscriberRoutes");
+const favoriteVideoRouter = require("./../routes/favoriteVideoRoutes");
 
 const router = express.Router();
 
 router.get("/", authController.isLoggedIn, channelController.getAllChannels);
 router.use("/:channelId/playlists", playlistRouter);
 router.use("/:channelId/videos", videoRouter);
+router.use("/:channelId/subscribers", subscriberRouter);
+router.use("/:channelId/favoriteVideos", favoriteVideoRouter);
 
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);

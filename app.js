@@ -17,7 +17,8 @@ const categoryRouter = require("./routes/categoryRoutes");
 const videoRouter = require("./routes/videoRoutes");
 const playListRouter = require("./routes/playListRoutes");
 const commentRouter = require("./routes/commentRoutes");
-
+const subscriberRouter = require("./routes/subscriberRoutes");
+const favoriteVideoRouter = require("./routes/favoriteVideoRoutes");
 const app = express();
 // Add headers before the routes are defined
 app.use(
@@ -78,6 +79,8 @@ app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/playlists", playListRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/subscribers", subscriberRouter);
+app.use("/api/v1/favoriteVideos", favoriteVideoRouter);
 
 // const __variableOfChoice = path.resolve();
 // app.use(express.static(path.join(__variableOfChoice, "/fe/dist")));

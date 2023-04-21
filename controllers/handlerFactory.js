@@ -97,6 +97,7 @@ exports.getAll = (Model) =>
 
 exports.isOwner = (Model) =>
   catchAsync(async (req, res, next) => {
+    if (req.channel.role === "admin") return next();
     const doc = await Model.findById(req.params.id).where({
       isHidden: { $ne: true },
       active: { $nin: ["ban", "verify"] },

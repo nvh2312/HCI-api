@@ -9,7 +9,6 @@ exports.getAllVideos = factory.getAll(Video);
 // exports.getVideo = factory.getOne(Video);
 exports.updateWatchedTime = catchAsync(async (req, res, next) => {
   const viewDoc = await View.findById(req.params.id);
-  console.log(req.params.id);
   viewDoc.watchedTime = req.body.watchedTime;
   // const watchedHistory =
   await viewDoc.save({ validateBeforeSave: false });
@@ -97,3 +96,4 @@ exports.deleteVideo = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+exports.isOwner = factory.isOwner(Video);
