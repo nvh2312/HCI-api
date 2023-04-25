@@ -5,7 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const View = require("./../models/viewModel");
 
-exports.getAllVideos = factory.getAll(Video);
+exports.getAllVideos = factory.getAll(Video, { path: "comments" });
 // exports.getVideo = factory.getOne(Video);
 exports.updateWatchedTime = catchAsync(async (req, res, next) => {
   const viewDoc = await View.findById(req.params.id);
@@ -20,7 +20,7 @@ exports.updateWatchedTime = catchAsync(async (req, res, next) => {
   });
 });
 exports.getVideo = catchAsync(async (req, res, next) => {
-  let query = Video.findById(req.params.id);
+  let query = Video.findById(req.params.id).populate("comments");
   const doc = await query;
   if (!doc) {
     return next(new AppError("No document found with that ID", 404));

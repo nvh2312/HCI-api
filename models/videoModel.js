@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Comment = require("./commentModel");
 
 const videoSchema = new mongoose.Schema(
   {
@@ -45,12 +46,13 @@ const videoSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-videoSchema.virtual("commentCount", {
+
+videoSchema.virtual("comments", {
   ref: "Comment",
-  localField: "_id",
   foreignField: "video",
-  count: true,
+  localField: "_id",
 });
+
 videoSchema.index({ createdAt: -1 });
 videoSchema.index({ "$**": "text" });
 videoSchema.pre(/^find/, function (next) {

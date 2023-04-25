@@ -67,7 +67,7 @@ exports.getOne = (Model, popOptions) =>
     });
   });
 
-exports.getAll = (Model) =>
+exports.getAll = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET
     let filter = {};
@@ -78,7 +78,11 @@ exports.getAll = (Model) =>
       filter.active = { $nin: ["ban", "verify"] };
     }
     if (Model === Comment) filter.parent = null;
-    const features = new APIFeatures(Model.find(filter), req.query)
+
+    const features = new APIFeatures(
+      Model.find(filter).populate(popOptions),
+      req.query
+    )
       .filter()
       .sort()
       .limitFields()
