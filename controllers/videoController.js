@@ -57,23 +57,24 @@ exports.createVideo = catchAsync(async (req, res, next) => {
 });
 exports.updateVideo = catchAsync(async (req, res, next) => {
   const videoId = req.params.id;
-  const doc = await Video.findById(videoId);
-  // remove video from previous array playlist
-  if (doc.playList) {
-    for (let i = 0; i < doc.playList.length; i++) {
-      let playList = await PlayList.findById(req.body.playList[i]);
-      playList.videos.filter((item) => item !== videoId);
-      await playList.save({ validateBeforeSave: false });
-    }
-  }
+  const doc = await Video.findByIdAndUpdate(videoId, req.body);
+  // const doc = await Video.findById(videoId);
   // update video and add video to new playlist
-  await doc.update(req.body);
   const newList = req.body?.playList;
   if (newList) {
+    // remove video from previous array playlist
+
+    if (doc.playList) {
+      for (let i = 0; i < doc.playList.length; i++) {
+        let playlist = await PlayList.findById(doc.playList[i]);
+        playlist.videos = playlist.videos.filter((item) => item.id !== videoId);
+        await playlist.save({ validateBeforeSave: false });
+      }
+    }
     for (let i = 0; i < newList.length; i++) {
-      let playList = await PlayList.findById(newList[i]);
-      playList.videos.push(doc.id);
-      await playListDoc.save({ validateBeforeSave: false });
+      let playlist = await PlayList.findById(newList[i]);
+      playlist.videos.push(doc.id);
+      await playlist.save({ validateBeforeSave: false });
     }
   }
   res.status(200).json({
