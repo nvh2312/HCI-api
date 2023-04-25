@@ -51,9 +51,6 @@ videoSchema.index({ "$**": "text" });
 videoSchema.pre(/^find/, function (next) {
   // this.find({ isHidden: { $ne: true } });
   this.populate({
-    path: "category",
-    select: "name",
-  }).populate({
     path: "channel",
     select: "-__v",
   });
