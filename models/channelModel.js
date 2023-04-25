@@ -3,66 +3,77 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
-const channelSchema = new mongoose.Schema({
-  fullName: {
-    type: String,
-    required: [true, "Vui lòng cung cấp tên!"],
-  },
-  email: {
-    type: String,
-    required: [true, "Vui lòng cung cấp email"],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, "Vui lòng cung cấp mail chính xác"],
-  },
-  avatar: {
-    type: String,
-    default:
-      "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/c6e56503cfdd87da299f72dc416023d4_he8cit.jpg",
-  },
-  thumbnail: {
-    type: String,
-    default:
-      "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/download_ywvhkh.png",
-  },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
-  },
-  password: {
-    type: String,
-    required: [true, "Tài khoản cần có mật khẩu"],
-    minlength: 8,
-    select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    required: [true, "Vui lòng nhập lại mật khẩu"],
-    validate: {
-      validator: function (el) {
-        return el === this.password;
-      },
-      message: "Nhập lại mật khẩu chưa đúng!",
+const channelSchema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
+      required: [true, "Vui lòng cung cấp tên!"],
     },
+    email: {
+      type: String,
+      required: [true, "Vui lòng cung cấp email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Vui lòng cung cấp mail chính xác"],
+    },
+    avatar: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/c6e56503cfdd87da299f72dc416023d4_he8cit.jpg",
+    },
+    thumbnail: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/download_ywvhkh.png",
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    password: {
+      type: String,
+      required: [true, "Tài khoản cần có mật khẩu"],
+      minlength: 8,
+      select: false,
+    },
+    passwordConfirm: {
+      type: String,
+      required: [true, "Vui lòng nhập lại mật khẩu"],
+      validate: {
+        validator: function (el) {
+          return el === this.password;
+        },
+        message: "Nhập lại mật khẩu chưa đúng!",
+      },
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    subscribers: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Channel",
+      },
+    ],
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    channelVerifyToken: String,
+    active: {
+      type: String,
+      enum: ["active", "verify", "ban"],
+      default: "verify",
+    },
+    description: String,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  channelVerifyToken: String,
-  active: {
-    type: String,
-    enum: ["active", "verify", "ban"],
-    default: "verify",
-  },
-  description: String,
-});
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 channelSchema.index({ "$**": "text" });
-
 channelSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -79,11 +90,13 @@ channelSchema.pre("save", function (next) {
   next();
 });
 
-// channelSchema.pre(/^find/, function (next) {
-//   // this points to the current query
-//   // this.find({ active: { $ne: "ban" } });
-//   next();
-// });
+channelSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "subscribers",
+    select: "fullName avatar active",
+  });
+  next();
+});
 
 channelSchema.methods.correctPassword = async function (
   candidatePassword,

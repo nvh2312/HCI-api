@@ -12,9 +12,11 @@ router
     commentController.setUserVideo,
     commentController.createComment
   );
-// router
-//   .route("/setLike/:id")
-//   .patch(authController.protect, commentController.likeComment);
+router.patch(
+  "/action",
+  authController.protect,
+  commentController.actionComment
+);
 router
   .route("/:id")
   .get(commentController.getComment)

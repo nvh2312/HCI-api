@@ -18,6 +18,8 @@ exports.createSubscriber = catchAsync(async (req, res, next) => {
   if (doc) {
     return next(new AppError("Bạn đã đăng ký kênh này rồi", 404));
   }
+  await Subscriber.updateSub(req.body.channel, req.channel.id, "add");
+
   res.status(201).json({
     message: "success",
   });
@@ -31,6 +33,7 @@ exports.deleteSubscriber = catchAsync(async (req, res, next) => {
   if (!doc) {
     return next(new AppError("Bạn chưa đăng ký kênh này", 404));
   }
+  await Subscriber.updateSub(req.body.channel, req.channel.id, "delete");
 
   res.status(204).json({
     status: "success",

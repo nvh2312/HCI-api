@@ -6,6 +6,7 @@ const PlayList = require("../models/playListModel");
 const Comment = require("../models/commentModel");
 const Video = require("../models/videoModel");
 const Subscriber = require("../models/subscriberModel");
+const APIFeatures = require("../utils/apiFeatures");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -66,6 +67,9 @@ exports.createChannel = (req, res) => {
     message: "This route is not defined! Please use /signup instead",
   });
 };
+
+// exports.getChannel = factory.getOne(Channel, { path: "subscribers" });
+// exports.getAllChannels = factory.getAll(Channel, { path: "subscribers" });
 exports.getChannel = factory.getOne(Channel);
 exports.getAllChannels = factory.getAll(Channel);
 exports.banChannel = catchAsync(async (req, res, next) => {

@@ -23,7 +23,7 @@ router
   .patch(authController.isLoggedIn, videoController.updateWatchedTime);
 router
   .route("/delete-multiple-videos")
-  .delete(
+  .patch(
     authController.protect,
     videoController.checkPermission,
     videoController.deleteMultipleVideos
