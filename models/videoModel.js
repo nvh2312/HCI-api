@@ -45,7 +45,12 @@ const videoSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
+videoSchema.virtual("commentCount", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "video",
+  count: true,
+});
 videoSchema.index({ createdAt: -1 });
 videoSchema.index({ "$**": "text" });
 videoSchema.pre(/^find/, function (next) {

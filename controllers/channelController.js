@@ -47,7 +47,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     message: "success",
-    data: { user: updatedChannel },
+    data: { data: { user: updatedChannel } },
   });
 });
 
