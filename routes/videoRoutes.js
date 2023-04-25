@@ -15,23 +15,30 @@ router
     factory.setChannel,
     videoController.createVideo
   );
+router.patch("/action", authController.protect, videoController.actionVideo);
 router.use("/:videoId/comments", commentRouter);
 
 router
   .route("/view/:id")
   .patch(authController.isLoggedIn, videoController.updateWatchedTime);
 router
+  .route("/delete-multiple-videos")
+  .delete(
+    authController.protect,
+    videoController.checkPermission,
+    videoController.deleteMultipleVideos
+  );
+
+router
   .route("/:id")
   .get(videoController.getVideo)
   .patch(
     authController.protect,
-    authController.restrictTo("user", "admin"),
     videoController.isOwner,
     videoController.updateVideo
   )
   .delete(
     authController.protect,
-    authController.restrictTo("user", "admin"),
     videoController.isOwner,
     videoController.deleteVideo
   );

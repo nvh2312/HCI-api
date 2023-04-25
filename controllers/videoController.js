@@ -92,8 +92,49 @@ exports.deleteVideo = catchAsync(async (req, res, next) => {
   //   const videos= doc.videos;
   //   for(int i=0
   res.status(204).json({
-    status: "success",
+    message: "success",
     data: null,
   });
 });
+exports.deleteMultipleVideos = catchAsync(async (req, res, next) => {
+  await Video.deleteMany({ _id: { $in: req.body.videos } });
+  res.status(204).json({
+    message: "success",
+    data: null,
+  });
+});
+exports.checkPermission = catchAsync(async (req, res, next) => {
+  if (req.channel.role === "admin") return next();
+  const arr = req.body.videos;
+  for (let i = 0; i < arr.length; i++) {
+    const doc = await Video.findOne({ _id: arr[i], channel: req.channel.id });
+    if (!doc) next(new AppError("Not permission", 401));
+  }
+  next();
+});
 exports.isOwner = factory.isOwner(Video);
+exports.actionVideo = catchAsync(async (req, res, next) => {
+  const data = await Video.findById(req.body.video).where({ isHidden: false });
+  if (!data) return next(new AppError("Not found this video"), 404);
+  const like = data.like;
+  const dislike = data.dislike;
+  let result = await like?.filter((u) => u !== req.channel.id);
+  let resultDis = await dislike?.filter((u) => u !== req.channel.id);
+  const action = req.body.action;
+  if (action === "like") {
+    if (like.length === result.length) result.push(req.channel.id);
+    data.like = result;
+    data.dislike = resultDis;
+  }
+  if (action === "dislike") {
+    if (dislike.length === resultDis.length) resultDis.push(req.channel.id);
+    data.dislike = resultDis;
+    data.like = result;
+  }
+  await data.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    message: "Cập nhật thành công",
+    doc: data,
+  });
+});

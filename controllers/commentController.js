@@ -50,3 +50,31 @@ exports.deleteComment = catchAsync(async (req, res, next) => {
   });
 });
 exports.isOwner = factory.isOwner(Comment);
+
+exports.actionComment = catchAsync(async (req, res, next) => {
+  const data = await Comment.findById(req.body.comment).where({
+    isHidden: false,
+  });
+  if (!data) return next(new AppError("Not found this comment"), 404);
+  const like = data.like;
+  const dislike = data.dislike;
+  let result = await like?.filter((u) => u !== req.channel.id);
+  let resultDis = await dislike?.filter((u) => u !== req.channel.id);
+  const action = req.body.action;
+  if (action === "like") {
+    if (like.length === result.length) result.push(req.channel.id);
+    data.like = result;
+    data.dislike = resultDis;
+  }
+  if (action === "dislike") {
+    if (dislike.length === resultDis.length) resultDis.push(req.channel.id);
+    data.dislike = resultDis;
+    data.like = result;
+  }
+  await data.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    message: "Cập nhật thành công",
+    doc: data,
+  });
+});

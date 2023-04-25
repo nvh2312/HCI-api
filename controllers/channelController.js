@@ -5,6 +5,7 @@ const factory = require("./handlerFactory");
 const PlayList = require("../models/playListModel");
 const Comment = require("../models/commentModel");
 const Video = require("../models/videoModel");
+const Subscriber = require("../models/subscriberModel");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -46,7 +47,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     message: "success",
-    user: updatedChannel,
+    data: { user: updatedChannel },
   });
 });
 
@@ -88,5 +89,35 @@ exports.banChannel = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "success",
     data: channelDoc,
+  });
+});
+
+exports.getChannelInfo = catchAsync(async (req, res, next) => {
+  const channelId = req.params?.id;
+  if (!channelId) return next(new AppError("Please provide channel", 404));
+  let channelDoc = await Channel.findById(channelId).where({
+    active: "active",
+  });
+  const query = {
+    channel: channelId,
+  };
+  const subscriberDoc = await Subscriber.find(query).populate({
+    path: "subscriber",
+    match: { active: "active" },
+  });
+  const subscribers = await subscriberDoc?.map((value) => value?.subscriber);
+  const user = {
+    description: channelDoc?.description,
+    thumbnail: channelDoc?.thumbnail,
+    avatar: channelDoc?.avatar,
+    fullName: channelDoc?.fullName,
+    createdAt: channelDoc?.createdAt,
+    subscribers,
+    description: channelDoc?.description,
+  };
+  // const user = { ...channelDoc, subscribers };
+  res.status(200).json({
+    message: "success",
+    data: { user },
   });
 });

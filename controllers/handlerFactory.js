@@ -58,7 +58,6 @@ exports.getOne = (Model, popOptions) =>
     let query = Model.findById(req.params.id).where(filter);
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
-    console.log(doc);
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
     }
@@ -106,7 +105,7 @@ exports.isOwner = (Model) =>
       return next(new AppError("No document found with that ID", 404));
     }
     if (doc.channel.id !== req.channel.id) {
-      return next(new AppError("Not permission", 404));
+      return next(new AppError("Not permission", 401));
     }
     req.doc = doc;
     next();

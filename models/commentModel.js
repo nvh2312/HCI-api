@@ -24,6 +24,7 @@ const CommentSchema = new mongoose.Schema(
       default: null,
     },
     like: [],
+    dislike: [],
     children: [
       {
         type: mongoose.Schema.ObjectId,
