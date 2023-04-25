@@ -15,8 +15,16 @@ const channelSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Vui lòng cung cấp mail chính xác"],
   },
-  avatar: String,
-  thumbnail: String,
+  avatar: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/c6e56503cfdd87da299f72dc416023d4_he8cit.jpg",
+  },
+  thumbnail: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dbekkzxtt/image/upload/v1682402687/download_ywvhkh.png",
+  },
   role: {
     type: String,
     enum: ["user", "admin"],
