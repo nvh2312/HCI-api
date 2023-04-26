@@ -90,13 +90,13 @@ channelSchema.pre("save", function (next) {
   next();
 });
 
-channelSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "subscribers",
-    select: "fullName avatar active",
-  });
-  next();
-});
+// channelSchema.pre(/^find/, function (next) {
+//   this.populate({
+//     path: "subscribers",
+//     select: "fullName avatar active",
+//   });
+//   next();
+// });
 
 channelSchema.methods.correctPassword = async function (
   candidatePassword,
