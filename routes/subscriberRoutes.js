@@ -11,6 +11,6 @@ router
     authController.restrictTo("user"),
     subscriberController.createSubscriber
   )
-  .delete(authController.protect, subscriberController.deleteSubscriber);
+  .patch(authController.protect, subscriberController.deleteSubscriber);
 
 module.exports = router;

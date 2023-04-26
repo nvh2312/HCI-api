@@ -7,6 +7,6 @@ router
   .route("/")
   .get(favoriteVideoController.getAllFavoriteVideos)
   .post(authController.protect, favoriteVideoController.createFavoriteVideo)
-  .delete(authController.protect, favoriteVideoController.deleteFavoriteVideo);
+  .patch(authController.protect, favoriteVideoController.deleteFavoriteVideo);
 
 module.exports = router;
