@@ -127,6 +127,7 @@ exports.sendMailVerify = catchAsync(async (req, res, next) => {
     console.log(err);
   }
 });
+
 const sendVerifyToken = async (channel, statusCode, res) => {
   // 1) create token to verify
   const verifyToken = channel.createVerifyToken();

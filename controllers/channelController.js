@@ -43,7 +43,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       new: true,
       runValidators: true,
     }
-  );
+  ).populate("subscribers");
 
   res.status(200).json({
     message: "success",
