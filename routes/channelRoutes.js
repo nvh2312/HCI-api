@@ -34,7 +34,7 @@ router.post(
 );
 router.post("/verify", authController.verifyChannel);
 router.post("/get-otp", authController.sendMailVerify);
-router.get("/get-channel/:id", channelController.getChannelInfo);
+router.get("/get-channel/:id", channelController.getChannel);
 
 router.use(authController.protect);
 

@@ -24,7 +24,7 @@ subscriberSchema.statics.updateSub = async function (channel, sub, method) {
   const channelDoc = await Channel.findById(channel);
   if (method === "delete") {
     const newSub = await channelDoc.subscribers.filter(
-      (item) => item.id !== sub
+      (item) => item.toString() !== sub
     );
     channelDoc.subscribers = newSub;
     await channelDoc.save({ validateBeforeSave: false });

@@ -73,6 +73,12 @@ const channelSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+channelSchema.virtual("favoriteVideos", {
+  ref: "FavoriteVideo",
+  localField: "_id",
+  foreignField: "channel",
+});
+
 channelSchema.index({ "$**": "text" });
 channelSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -92,8 +98,8 @@ channelSchema.pre("save", function (next) {
 
 // channelSchema.pre(/^find/, function (next) {
 //   this.populate({
-//     path: "subscribers",
-//     select: "fullName avatar active",
+//     path: "favoriteVideos",
+//     select: "-__v",
 //   });
 //   next();
 // });

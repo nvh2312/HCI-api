@@ -195,7 +195,9 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Vui lòng cung cấp email và mật khẩu!", 422));
   }
   // 2) Check if channel exists && password is correct
-  const channel = await Channel.findOne({ email }).select("+password");
+  const channel = await Channel.findOne({ email })
+    .select("+password")
+    .populate("favoriteVideos");
 
   if (
     !channel ||
@@ -236,7 +238,9 @@ exports.protect = catchAsync(async (req, res, next) => {
     process.env.ACCESS_TOKEN_SECRET
   );
   // 3) Check if channel still exists
-  const currentChannel = await Channel.findById(decoded.channelId);
+  const currentChannel = await Channel.findById(decoded.channelId)
+    .populate("subscribers")
+    .populate("favoriteVideos");
 
   if (!currentChannel) {
     return next(new AppError("Token người dùng không còn tồn tại.", 401));
@@ -272,7 +276,9 @@ exports.isLoggedIn = async (req, res, next) => {
         process.env.REFRESH_TOKEN_SECRET
       );
       // 2) Check if channel still exists
-      const currentchannel = await Channel.findById(decoded.channel);
+      const currentchannel = await Channel.findById(decoded.channel)
+        .populate("subscribers")
+        .populate("favoriteVideos");
       if (!currentchannel) {
         return next();
       }
@@ -314,7 +320,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 2) Generate the random reset token
   const resetToken = channel.createPasswordResetToken();
-  console.log("ok");
   await channel.save({ validateBeforeSave: false });
 
   // 3) Send it to channel's email
@@ -370,7 +375,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const channel = await Channel.findOne({
     passwordResetToken: req.params.token,
     passwordResetExpires: { $gt: Date.now() },
-  });
+  })
+    .populate("subscribers")
+    .populate("favoriteVideos");
   // 2) If token has not expired, and there is channel, set the new password
   if (!channel) {
     return next(new AppError("Token không hợp lệ hoặc đã hết hạn", 400));
@@ -388,7 +395,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get channel from collection
-  const channel = await Channel.findById(req.channel.id).select("+password");
+  const channel = await Channel.findById(req.channel.id)
+    .select("+password")
+    .populate("subscribers")
+    .populate("favoriteVideos");
 
   // 2) Check if POSTed current password is correct
   if (

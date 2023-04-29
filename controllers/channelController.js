@@ -69,8 +69,21 @@ exports.createChannel = (req, res) => {
 
 // exports.getChannel = factory.getOne(Channel, { path: "subscribers" });
 exports.getAllChannels = factory.getAll(Channel, { path: "subscribers" });
-exports.getChannel = factory.getOne(Channel);
-// exports.getAllChannels = factory.getAll(Channel);
+exports.getChannel = catchAsync(async (req, res, next) => {
+  let filter = {};
+
+  filter.active = { $nin: ["ban", "verify"] };
+  let query = Channel.findById(req.params.id).where(filter);
+  query = query.populate("subscribers").populate("favoriteVideos");
+  const doc = await query;
+  if (!doc) {
+    return next(new AppError("No document found with that ID", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: doc,
+  });
+});
 exports.banChannel = catchAsync(async (req, res, next) => {
   const channelId = req.body.channel;
   const action = req.body.action;
@@ -92,35 +105,5 @@ exports.banChannel = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "success",
     data: channelDoc,
-  });
-});
-
-exports.getChannelInfo = catchAsync(async (req, res, next) => {
-  const channelId = req.params?.id;
-  if (!channelId) return next(new AppError("Please provide channel", 404));
-  let channelDoc = await Channel.findById(channelId).where({
-    active: "active",
-  });
-  const query = {
-    channel: channelId,
-  };
-  const subscriberDoc = await Subscriber.find(query).populate({
-    path: "subscriber",
-    match: { active: "active" },
-  });
-  const subscribers = await subscriberDoc?.map((value) => value?.subscriber);
-  const user = {
-    description: channelDoc?.description,
-    thumbnail: channelDoc?.thumbnail,
-    avatar: channelDoc?.avatar,
-    fullName: channelDoc?.fullName,
-    createdAt: channelDoc?.createdAt,
-    subscribers,
-    description: channelDoc?.description,
-  };
-  // const user = { ...channelDoc, subscribers };
-  res.status(200).json({
-    message: "success",
-    data: { user },
   });
 });
