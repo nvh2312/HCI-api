@@ -57,6 +57,13 @@ const channelSchema = new mongoose.Schema(
         ref: "Channel",
       },
     ],
+    favoriteVideos: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Video",
+      },
+    ],
+
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -73,11 +80,11 @@ const channelSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-channelSchema.virtual("favoriteVideos", {
-  ref: "FavoriteVideo",
-  localField: "_id",
-  foreignField: "channel",
-});
+// channelSchema.virtual("favoriteVideos", {
+//   ref: "FavoriteVideo",
+//   localField: "_id",
+//   foreignField: "channel",
+// });
 
 channelSchema.index({ "$**": "text" });
 channelSchema.pre("save", async function (next) {

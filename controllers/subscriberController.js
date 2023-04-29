@@ -11,32 +11,36 @@ exports.createSubscriber = catchAsync(async (req, res, next) => {
     active: "active",
   });
   if (!channel) return next(new AppError("Not found this channel", 404));
-  const filter = { channel: req.body.channel, subscriber: req.channel };
-  const options = { upsert: true };
-
-  const doc = await Subscriber.findOneAndUpdate(filter, {}, options);
-  if (doc) {
+  const index = await channel.subscribers.findIndex(
+    (item) => item.toString() === req.channel.id
+  );
+  if (index !== -1)
     return next(new AppError("Bạn đã đăng ký kênh này rồi", 404));
-  }
-  await Subscriber.updateSub(req.body.channel, req.channel.id, "add");
+  const newSub = channel.subscribers.push(req.channel.id);
+  channel.subscribers = newSub;
+  await channel.save({ validateBeforeSave: false });
 
   res.status(201).json({
     message: "success",
+    data: { user: channel },
   });
 });
 exports.deleteSubscriber = catchAsync(async (req, res, next) => {
-  const doc = await Subscriber.findOneAndDelete({
-    channel: req.body.channel,
-    subscriber: req.channel,
+  const channel = await Channel.findOne({
+    _id: req.body.channel,
+    active: "active",
   });
-
-  if (!doc) {
+  if (!channel) return next(new AppError("Not found this channel", 404));
+  const newSub = await channel.subscribers.filter(
+    (item) => item.toString() !== req.channel.id
+  );
+  if (channel.subscribers.length === newSub.length)
     return next(new AppError("Bạn chưa đăng ký kênh này", 404));
-  }
-  await Subscriber.updateSub(req.body.channel, req.channel.id, "delete");
+  channel.subscribers = newSub;
+  await channel.save({ validateBeforeSave: false });
 
-  res.status(204).json({
+  res.status(200).json({
     status: "success",
-    data: null,
+    data: { user: channel },
   });
 });

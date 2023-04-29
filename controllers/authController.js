@@ -197,8 +197,7 @@ exports.login = catchAsync(async (req, res, next) => {
   // 2) Check if channel exists && password is correct
   const channel = await Channel.findOne({ email })
     .select("+password")
-    .populate("favoriteVideos");
-
+    .populate("subscribers");
   if (
     !channel ||
     !(await channel.correctPassword(password.toString(), channel.password))
@@ -238,10 +237,9 @@ exports.protect = catchAsync(async (req, res, next) => {
     process.env.ACCESS_TOKEN_SECRET
   );
   // 3) Check if channel still exists
-  const currentChannel = await Channel.findById(decoded.channelId)
-    .populate("subscribers")
-    .populate("favoriteVideos");
-
+  const currentChannel = await Channel.findById(decoded.channelId).populate(
+    "subscribers"
+  );
   if (!currentChannel) {
     return next(new AppError("Token người dùng không còn tồn tại.", 401));
   }
@@ -276,9 +274,9 @@ exports.isLoggedIn = async (req, res, next) => {
         process.env.REFRESH_TOKEN_SECRET
       );
       // 2) Check if channel still exists
-      const currentchannel = await Channel.findById(decoded.channel)
-        .populate("subscribers")
-        .populate("favoriteVideos");
+      const currentchannel = await Channel.findById(decoded.channel).populate(
+        "subscribers"
+      );
       if (!currentchannel) {
         return next();
       }
@@ -375,9 +373,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const channel = await Channel.findOne({
     passwordResetToken: req.params.token,
     passwordResetExpires: { $gt: Date.now() },
-  })
-    .populate("subscribers")
-    .populate("favoriteVideos");
+  }).populate("subscribers");
   // 2) If token has not expired, and there is channel, set the new password
   if (!channel) {
     return next(new AppError("Token không hợp lệ hoặc đã hết hạn", 400));
@@ -397,9 +393,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get channel from collection
   const channel = await Channel.findById(req.channel.id)
     .select("+password")
-    .populate("subscribers")
-    .populate("favoriteVideos");
-
+    .populate("subscribers");
   // 2) Check if POSTed current password is correct
   if (
     !(await channel.correctPassword(req.body.passwordCurrent, channel.password))
@@ -432,7 +426,7 @@ exports.logoutAll = catchAsync(async (req, res) => {
 exports.googleLogin = catchAsync(async (req, res) => {
   const { email, displayName } = req.body.channel;
   // 1) Check if channel exists
-  const data = await Channel.findOne({ email });
+  const data = await Channel.findOne({ email }).populate("subscribers");
   // 2) Check if channel exist
   if (!data) {
     const password = email + process.env.ACCESS_TOKEN_SECRET;

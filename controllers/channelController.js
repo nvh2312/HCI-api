@@ -67,23 +67,23 @@ exports.createChannel = (req, res) => {
   });
 };
 
-// exports.getChannel = factory.getOne(Channel, { path: "subscribers" });
+exports.getChannel = factory.getOne(Channel, { path: "subscribers" });
 exports.getAllChannels = factory.getAll(Channel, { path: "subscribers" });
-exports.getChannel = catchAsync(async (req, res, next) => {
-  let filter = {};
+// exports.getChannel = catchAsync(async (req, res, next) => {
+//   let filter = {};
 
-  filter.active = { $nin: ["ban", "verify"] };
-  let query = Channel.findById(req.params.id).where(filter);
-  query = query.populate("subscribers").populate("favoriteVideos");
-  const doc = await query;
-  if (!doc) {
-    return next(new AppError("No document found with that ID", 404));
-  }
-  res.status(200).json({
-    status: "success",
-    data: doc,
-  });
-});
+//   filter.active = { $nin: ["ban", "verify"] };
+//   let query = Channel.findById(req.params.id).where(filter);
+//   query = query.populate("subscribers").populate("favoriteVideos");
+//   const doc = await query;
+//   if (!doc) {
+//     return next(new AppError("No document found with that ID", 404));
+//   }
+//   res.status(200).json({
+//     status: "success",
+//     data: doc,
+//   });
+// });
 exports.banChannel = catchAsync(async (req, res, next) => {
   const channelId = req.body.channel;
   const action = req.body.action;
