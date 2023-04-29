@@ -57,6 +57,12 @@ const channelSchema = new mongoose.Schema(
         ref: "Channel",
       },
     ],
+    followings: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Channel",
+      },
+    ],
     favoriteVideos: [
       {
         type: mongoose.Schema.ObjectId,
