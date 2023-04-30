@@ -218,9 +218,12 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
+  console.log(req.cookies.jwt);
   let token;
   let refreshToken;
   try {
+    console.log(req.headers.authorization.split(" ")[1]);
+    console.log(req.cookies.jwt);
     token = req.headers.authorization.split(" ")[1];
     refreshToken = req.cookies.jwt;
   } catch (error) {
@@ -254,6 +257,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 4) Check if channel changed password after the token was issued
   if (currentChannel.changedPasswordAfter(decoded.iat)) {
+    console.log(decoded);
     return next(
       new AppError(
         "Tài khoản gần đây đã thay đổi mật khẩu! Xin vui lòng đăng nhập lại.",

@@ -60,6 +60,9 @@ videoSchema.pre(/^find/, function (next) {
   this.populate({
     path: "channel",
     select: "-__v",
+    populate: {
+      path: "subscribers",
+    },
   });
   next();
 });
