@@ -89,7 +89,6 @@ const createSendToken = async (channel, statusCode, res) => {
 
   res.cookie("jwt", refreshToken, cookieOptions);
   channel.password = undefined;
-
   res.status(statusCode).json({
     message: "success",
     data: {
@@ -239,9 +238,9 @@ exports.protect = catchAsync(async (req, res, next) => {
     process.env.ACCESS_TOKEN_SECRET
   );
   // 3) Check if channel still exists
-  const currentChannel = await Channel.findById(decoded.channelId).populate(
-    "subscribers"
-  );
+  const currentChannel = await Channel.findById(decoded.channelId)
+    .populate("subscribers")
+    .populate("followings");
   if (!currentChannel) {
     return next(new AppError("Token người dùng không còn tồn tại.", 401));
   }
@@ -362,7 +361,7 @@ exports.verifyResetPass = catchAsync(async (req, res, next) => {
   });
   // 2) If token has not expired, and there is channel, set the new password
   if (!channel) {
-    return next(new AppError("Token không hợp lệ hoặc đã hết hạn", 400));
+    return next(new AppError("Mã xác nhận không hợp lệ hoặc đã hết hạn", 400));
   }
   res.status(200).json({
     status: "success",
@@ -380,7 +379,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .populate("followings");
   // 2) If token has not expired, and there is channel, set the new password
   if (!channel) {
-    return next(new AppError("Token không hợp lệ hoặc đã hết hạn", 400));
+    return next(new AppError("Mã xác nhận không hợp lệ hoặc đã hết hạn", 400));
   }
   channel.password = req.body.password;
   channel.passwordConfirm = req.body.passwordConfirm;

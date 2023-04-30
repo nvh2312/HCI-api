@@ -9,16 +9,18 @@ exports.createSubscriber = catchAsync(async (req, res, next) => {
   const channel = await Channel.findOne({
     _id: req.body.channel,
     active: "active",
-  });
+  })
+    .populate("subscribers")
+    .populate("followings");
   const myChannel = req.channel;
   if (!channel) return next(new AppError("Not found this channel", 404));
   const index = await channel.subscribers.findIndex(
-    (item) => item.toString() === myChannel.id
+    (item) => item.id === myChannel.id
   );
   if (index !== -1)
     return next(new AppError("Bạn đã đăng ký kênh này rồi", 404));
-  const newSub = channel.subscribers.push(myChannel.id);
-  const myFollowings = myChannel.followings.push(channel.id);
+  const newSub = channel.subscribers.push(myChannel);
+  const myFollowings = myChannel.followings.push(channel);
   channel.subscribers = newSub;
   myChannel.followings = myFollowings;
   await channel.save({ validateBeforeSave: false });
@@ -33,16 +35,18 @@ exports.deleteSubscriber = catchAsync(async (req, res, next) => {
   const channel = await Channel.findOne({
     _id: req.body.channel,
     active: "active",
-  });
+  })
+    .populate("subscribers")
+    .populate("followings");
   if (!channel) return next(new AppError("Not found this channel", 404));
   const myChannel = req.channel;
   const newSub = await channel.subscribers.filter(
-    (item) => item.toString() !== myChannel.id
+    (item) => item.id !== myChannel.id
   );
   if (channel.subscribers.length === newSub.length)
     return next(new AppError("Bạn chưa đăng ký kênh này", 404));
   const myFollowings = await myChannel.followings.filter(
-    (item) => item.toString() !== channel.id
+    (item) => item.id !== channel.id
   );
   channel.subscribers = newSub;
   myChannel.followings = myFollowings;
