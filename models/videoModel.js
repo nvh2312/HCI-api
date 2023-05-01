@@ -29,7 +29,7 @@ const videoSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
-    duration: String,
+    duration: Number,
     view: {
       type: Number,
       default: 0,
