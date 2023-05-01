@@ -215,11 +215,15 @@ exports.videoFollowings = catchAsync(async (req, res, next) => {
   });
 });
 exports.searchVideos = catchAsync(async (req, res, next) => {
-  const { timeRange, category, duration_min, duration_max, sortBy } = req.query;
+  const { keyword, timeRange, category, duration_min, duration_max, sortBy } =
+    req.query;
   const filter = {};
   if (category) {
     filter.category = { $in: category };
     // filter.category = { $in: category.split(",") };
+  }
+  if (keyword) {
+    filter["$text"] = { $search: keyword };
   }
   if (duration_min && duration_max) {
     filter.duration = { $gte: duration_min, $lte: duration_max };
@@ -251,7 +255,6 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
   }
 
   const sort = sortBy === "view" ? { view: -1 } : { createdAt: -1 };
-  console.log(filter, sort);
   const videos = await Video.find(filter).sort(sort);
   res.status(200).json({
     message: "success",
