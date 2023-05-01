@@ -4,6 +4,7 @@ const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const View = require("./../models/viewModel");
+const moment = require("moment");
 
 exports.getAllVideos = factory.getAll(Video, { path: "comments" });
 // exports.getVideo = factory.getOne(Video);
@@ -137,5 +138,123 @@ exports.actionVideo = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "Cập nhật thành công",
     doc: data,
+  });
+});
+async function getVideosByDateRange(channels, startDate, endDate) {
+  return await Video.find({
+    channel: { $in: channels },
+    isHidden: false,
+    createdAt: { $gte: startDate, $lte: endDate },
+  });
+}
+exports.videoFollowings = catchAsync(async (req, res, next) => {
+  const followings = req.channel.followings;
+  if (followings.length === 0)
+    next(new AppError("Bạn chưa đăng ký kênh nào", 404));
+  // const todayStart = moment().startOf("day").toDate();
+  // const todayEnd = moment().endOf("day").toDate();
+
+  // const yesterdayStart = moment().subtract(1, "days").startOf("day").toDate();
+  // const yesterdayEnd = moment().subtract(1, "days").endOf("day").toDate();
+
+  // const thisWeekStart = moment().startOf("week").toDate();
+  // const thisWeekEnd = moment().endOf("week").toDate();
+
+  // const allStart = new Date(0); // Set to Unix epoch
+  // const allEnd = moment().subtract(1, "weeks").endOf("week");
+
+  // const [today, yesterday, thisWeek, later] = await Promise.all([
+  //   getVideosByDateRange(followings, todayStart, todayEnd),
+  //   getVideosByDateRange(followings, yesterdayStart, yesterdayEnd),
+  //   getVideosByDateRange(followings, thisWeekStart, thisWeekEnd),
+  //   getVideosByDateRange(followings, allStart, allEnd),
+  // ]);
+  // res.json({
+  //   message: "success",
+  //   data: {
+  //     today,
+  //     yesterday,
+  //     thisWeek,
+  //     later,
+  //   },
+  // });
+  const today = moment().startOf("day").toDate();
+  const yesterday = moment().subtract(1, "days").startOf("day").toDate();
+  const startOfWeek = moment().startOf("week").toDate();
+  const startOfMonth = moment().startOf("month").toDate();
+  const filter = {
+    channel: { $in: followings },
+    isHidden: false,
+  };
+  const videos = await Video.find(filter).sort({ createdAt: -1 });
+  const result = {
+    today: [],
+    yesterday: [],
+    thisWeek: [],
+    thisMonth: [],
+    older: [],
+  };
+  videos.forEach((video) => {
+    const date = video.createdAt;
+    if (date >= today) {
+      result.today.push(video);
+    } else if (date >= yesterday) {
+      result.yesterday.push(video);
+    } else if (date >= startOfWeek) {
+      result.thisWeek.push(video);
+    } else if (date >= startOfMonth) {
+      result.thisMonth.push(video);
+    } else {
+      result.older.push(video);
+    }
+  });
+
+  res.status(200).json({
+    message: "success",
+    data: result,
+  });
+});
+exports.searchVideos = catchAsync(async (req, res, next) => {
+  const { timeRange, category, duration_min, duration_max, sortBy } = req.query;
+  const filter = {};
+  if (category) {
+    filter.category = { $in: category };
+    // filter.category = { $in: category.split(",") };
+  }
+  if (duration_min && duration_max) {
+    filter.duration = { $gte: duration_min, $lte: duration_max };
+  } else if (duration_min) {
+    filter.duration = { $gte: duration_min };
+  } else if (duration_max) {
+    filter.duration = { $lte: duration_max };
+  }
+  if (timeRange) {
+    let createdAt = {};
+    switch (timeRange) {
+      case "today":
+        createdAt = { $gte: moment().startOf("day").toDate() };
+        break;
+      case "thisWeek":
+        createdAt = {
+          $gte: moment().startOf("week").toDate(),
+        };
+        break;
+      case "thisMonth":
+        createdAt = { $gte: moment().startOf("month").toDate() };
+        break;
+      case "thisYear":
+        createdAt = { $gte: moment().startOf("year").toDate() };
+        break;
+    }
+
+    filter.createdAt = createdAt;
+  }
+
+  const sort = sortBy === "view" ? { view: -1 } : { createdAt: -1 };
+  console.log(filter, sort);
+  const videos = await Video.find(filter).sort(sort);
+  res.status(200).json({
+    message: "success",
+    data: videos,
   });
 });

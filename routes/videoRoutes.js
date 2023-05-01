@@ -15,6 +15,12 @@ router
     factory.setChannel,
     videoController.createVideo
   );
+router.get("/search-videos", videoController.searchVideos);
+router.get(
+  "/following-videos",
+  authController.protect,
+  videoController.videoFollowings
+);
 router.patch("/action", authController.protect, videoController.actionVideo);
 router.use("/:videoId/comments", commentRouter);
 
