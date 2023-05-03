@@ -1,4 +1,5 @@
 const Video = require("./../models/videoModel");
+const Channel = require("./../models/channelModel");
 const PlayList = require("./../models/playListModel");
 const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
@@ -220,10 +221,16 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
   const filter = {};
   if (category) {
     filter.category = { $in: category };
-    // filter.category = { $in: category.split(",") };
+    // filter.category = { $in: category.split(",") };  \\  $all
   }
+  let user;
+  const today = new Date();
+
   if (keyword) {
     filter["$text"] = { $search: keyword };
+    user = await Channel.find({
+      fullName: { $regex: `.*${keyword}.*`, $options: "i" },
+    });
   }
   if (duration_min && duration_max) {
     filter.duration = { $gte: duration_min, $lte: duration_max };
@@ -236,28 +243,27 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
     let createdAt = {};
     switch (timeRange) {
       case "today":
-        createdAt = { $gte: moment().startOf("day").toDate() };
+        createdAt = { $gte: new Date(today - 24 * 60 * 60 * 1000) };
         break;
       case "thisWeek":
         createdAt = {
-          $gte: moment().startOf("week").toDate(),
+          $gte: new Date(today - 7 * 24 * 60 * 60 * 1000),
         };
         break;
       case "thisMonth":
-        createdAt = { $gte: moment().startOf("month").toDate() };
+        createdAt = { $gte: new Date(today - 30 * 24 * 60 * 60 * 1000) };
         break;
       case "thisYear":
-        createdAt = { $gte: moment().startOf("year").toDate() };
+        createdAt = { $gte: new Date(today - 365 * 24 * 60 * 60 * 1000) };
         break;
     }
 
     filter.createdAt = createdAt;
   }
-
   const sort = sortBy === "view" ? { view: -1 } : { createdAt: -1 };
   const videos = await Video.find(filter).sort(sort);
   res.status(200).json({
     message: "success",
-    data: videos,
+    data: { users: user || [], videos },
   });
 });
