@@ -6,6 +6,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const View = require("./../models/viewModel");
 const moment = require("moment");
+const WatchHistory = require("../models/watchHistoryModel");
 
 exports.getAllVideos = factory.getAll(Video, { path: "comments" });
 // exports.getVideo = factory.getOne(Video);
@@ -14,6 +15,24 @@ exports.updateWatchedTime = catchAsync(async (req, res, next) => {
   viewDoc.watchedTime = req.body.watchedTime;
   // const watchedHistory =
   await viewDoc.save({ validateBeforeSave: false });
+  if (req.channel) {
+    const today = new Date();
+    const filter = {
+      channel: req.channel,
+      video: viewDoc.video,
+      createdAt: { $gte: new Date(today - 30 * 60 * 1000) },
+    };
+    const options = { upsert: true };
+    const update = {
+      createdAt: today,
+      watchedTime: req.body.watchedTime,
+    };
+    const watched = await WatchHistory.findOneAndUpdate(
+      filter,
+      update,
+      options
+    );
+  }
   res.status(200).json({
     status: "success",
     data: {
@@ -21,23 +40,66 @@ exports.updateWatchedTime = catchAsync(async (req, res, next) => {
     },
   });
 });
+exports.createView = catchAsync(async (req, res, next) => {
+  const video = await Video.findById(req.body.video);
+  if (!video) return next(new AppError("Not found this video", 404));
+  video.view++;
+  await video.save({ validateBeforeSave: false });
+  if (req.channel) {
+    const today = new Date();
+    const filter = {
+      channel: req.channel,
+      video: req.body.video,
+      createdAt: { $gte: new Date(today - 30 * 60 * 1000) },
+    };
+    const options = { upsert: true };
+    const update = {
+      createdAt: today,
+      watchedTime: req.body.watchedTime,
+    };
+    const watched = await WatchHistory.findOneAndUpdate(
+      filter,
+      update,
+      options
+    );
+  }
+  const view = await View.create(req.body);
+  res.status(200).json({
+    status: "success",
+    data: {
+      view,
+    },
+  });
+});
 exports.getVideo = catchAsync(async (req, res, next) => {
-  let query = Video.findById(req.params.id).populate("comments");
+  let query = Video.findById(req.params.id)
+    .where({ isHidden: false })
+    .populate("comments");
   const doc = await query;
   if (!doc) {
     return next(new AppError("No document found with that ID", 404));
   }
-  doc.view++;
-  await doc.save({ validateBeforeSave: false });
-  const view = View({
-    video: req.params.id,
-  });
-  await view.save();
+  if (req.channel) {
+    const today = new Date();
+    const filter = {
+      channel: req.channel,
+      video: req.params.id,
+      createdAt: { $gte: new Date(today - 30 * 60 * 1000) },
+    };
+    const options = { upsert: true };
+    const update = {
+      createdAt: today,
+    };
+    const watched = await WatchHistory.findOneAndUpdate(
+      filter,
+      update,
+      options
+    );
+  }
   res.status(200).json({
     status: "success",
     data: {
       video: doc,
-      view,
     },
   });
 });
@@ -230,6 +292,7 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
     filter["$text"] = { $search: keyword };
     user = await Channel.find({
       fullName: { $regex: `.*${keyword}.*`, $options: "i" },
+      active: "active",
     });
   }
   if (duration_min && duration_max) {
@@ -260,6 +323,7 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
 
     filter.createdAt = createdAt;
   }
+  filter.isHidden = false;
   const sort = sortBy === "view" ? { view: -1 } : { createdAt: -1 };
   const videos = await Video.find(filter).sort(sort);
   res.status(200).json({

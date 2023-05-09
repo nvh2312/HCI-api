@@ -4,6 +4,7 @@ const channelController = require("../controllers/channelController");
 const playlistRouter = require("./../routes/playListRoutes");
 const videoRouter = require("./../routes/videoRoutes");
 const favoriteVideoRouter = require("./../routes/favoriteVideoRoutes");
+const watchHistoryRouter = require("./../routes/watchHistoryRoutes");
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.get("/", authController.isLoggedIn, channelController.getAllChannels);
 router.use("/:channelId/playlists", playlistRouter);
 router.use("/:channelId/videos", videoRouter);
 router.use("/:channelId/favoriteVideos", favoriteVideoRouter);
+router.use("/:channelId/watchHistories", watchHistoryRouter);
 
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);

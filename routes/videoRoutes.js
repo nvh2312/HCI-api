@@ -25,6 +25,10 @@ router.patch("/action", authController.protect, videoController.actionVideo);
 router.use("/:videoId/comments", commentRouter);
 
 router
+  .route("/view")
+  .post(authController.isLoggedIn, videoController.createView);
+
+router
   .route("/view/:id")
   .patch(authController.isLoggedIn, videoController.updateWatchedTime);
 router
@@ -37,7 +41,7 @@ router
 
 router
   .route("/:id")
-  .get(videoController.getVideo)
+  .get(authController.isLoggedIn, videoController.getVideo)
   .patch(
     authController.protect,
     videoController.isOwner,
