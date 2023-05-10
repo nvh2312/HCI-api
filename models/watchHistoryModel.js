@@ -18,6 +18,14 @@ const watchHistorySchema = new mongoose.Schema({
   },
 });
 
+watchHistorySchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "video",
+    select: "title channel duration thumbnail",
+  });
+  next();
+});
+
 const WatchHistory = mongoose.model("WatchHistory", watchHistorySchema);
 
 module.exports = WatchHistory;
