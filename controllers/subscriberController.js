@@ -19,6 +19,10 @@ exports.createSubscriber = catchAsync(async (req, res, next) => {
   );
   if (index !== -1)
     return next(new AppError("Bạn đã đăng ký kênh này rồi", 404));
+  await Subscriber.create({
+    channel: req.body.channel,
+    subscriber: req.channel.id,
+  });
   const newSub = channel.subscribers.push(myChannel);
   const myFollowings = myChannel.followings.push(channel);
   channel.subscribers = newSub;
@@ -45,6 +49,10 @@ exports.deleteSubscriber = catchAsync(async (req, res, next) => {
   );
   if (channel.subscribers.length === newSub.length)
     return next(new AppError("Bạn chưa đăng ký kênh này", 404));
+  await Subscriber.findOneAndDelete({
+    channel: req.body.channel,
+    subscriber: req.channel.id,
+  });
   const myFollowings = await myChannel.followings.filter(
     (item) => item.id !== channel.id
   );

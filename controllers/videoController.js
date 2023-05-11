@@ -121,7 +121,10 @@ exports.createVideo = catchAsync(async (req, res, next) => {
 });
 exports.updateVideo = catchAsync(async (req, res, next) => {
   const videoId = req.params.id;
-  const doc = await Video.findByIdAndUpdate(videoId, req.body);
+  const doc = await Video.findByIdAndUpdate(videoId, req.body, {
+    new: true,
+    runValidators: true,
+  });
   // const doc = await Video.findById(videoId);
   // update video and add video to new playlist
   const newList = req.body?.playList;

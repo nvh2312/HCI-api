@@ -106,8 +106,7 @@ exports.isOwner = (Model) =>
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
     }
-    if (doc.channel.toString() !== req.channel.id) {
-      console.log(doc.channel, req.channel.id);
+    if (doc.channel.id.toString() !== req.channel.id) {
       return next(new AppError("Not permission", 401));
     }
     req.doc = doc;
