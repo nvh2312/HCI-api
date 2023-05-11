@@ -69,7 +69,14 @@ const channelSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
-
+    notification: [
+      {
+        video: Object,
+        channel: Object,
+        createdAt: Date,
+        seen: { type: Boolean, default: false },
+      },
+    ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,

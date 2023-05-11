@@ -6,6 +6,8 @@ const PlayList = require("../models/playListModel");
 const Comment = require("../models/commentModel");
 const Video = require("../models/videoModel");
 const Subscriber = require("../models/subscriberModel");
+const { ObjectId } = require("mongodb");
+const View = require("../models/viewModel");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -86,6 +88,20 @@ exports.getChannel = catchAsync(async (req, res, next) => {
     data: doc,
   });
 });
+exports.seenNotification = catchAsync(async (req, res, next) => {
+  const channel = req.channel;
+  const index = channel.notification.findIndex(
+    (item) => item.video.id === req.body.video
+  );
+  if (index !== -1) {
+    channel.notification[index].seen = true;
+    await channel.save({ validateBeforeSave: false });
+  }
+  res.status(200).json({
+    status: "success",
+    data: channel,
+  });
+});
 exports.banChannel = catchAsync(async (req, res, next) => {
   const channelId = req.body.channel;
   const action = req.body.action;
@@ -107,5 +123,68 @@ exports.banChannel = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "success",
     data: channelDoc,
+  });
+});
+exports.analysis = catchAsync(async (req, res, next) => {
+  const timeRanges = req.query.timeRanges;
+  const option = req.query.option;
+  const model = option === "subscriber" ? Subscriber : View;
+  const match = option === "subscriber" ? "channel" : "video.channel";
+  const count = option === "time" ? "$watchedTime" : 1;
+  let days;
+  switch (timeRanges) {
+    case "7days":
+      days = 7;
+      break;
+    case "28days":
+      days = 28;
+      break;
+    case "90days":
+      days = 90;
+      break;
+    case "365days":
+      days = 365;
+      break;
+    default:
+      days = 7;
+  }
+  const now = new Date();
+  const startDate = new Date(now - days * 24 * 60 * 60 * 1000);
+  const pipeline = [
+    ...(option === "subscriber"
+      ? []
+      : [
+          {
+            $lookup: {
+              from: "videos",
+              localField: "video",
+              foreignField: "_id",
+              as: "video",
+            },
+          },
+        ]),
+    {
+      $match: {
+        [match]: new ObjectId(req.channel.id),
+        createdAt: {
+          $gte: startDate,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+        },
+        count: { $sum: count },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ];
+  const doc = await model.aggregate(pipeline);
+  const data = doc.map((item) => ({ date: item._id, count: item.count }));
+  res.status(200).json({
+    message: "success",
+    data,
   });
 });

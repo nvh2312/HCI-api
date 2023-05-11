@@ -112,6 +112,24 @@ exports.createVideo = catchAsync(async (req, res, next) => {
       await playList.save({ validateBeforeSave: false });
     }
   }
+  const notification = {
+    video: {
+      id: doc.id,
+      title: doc.title,
+      thumbnail: doc.thumbnail,
+    },
+    channel: { id: req.channel.id, avatar: req.channel.avatar },
+    createdAt: doc.createdAt,
+  };
+  if (req.channel.subscribers) {
+    Promise.all(
+      req.channel.subscribers.map(async (item) => {
+        const subscriber = await Channel.findById(item.id);
+        subscriber.notification.unshift(notification);
+        await subscriber.save({ validateBeforeSave: false });
+      })
+    );
+  }
   res.status(201).json({
     message: "success",
     data: {

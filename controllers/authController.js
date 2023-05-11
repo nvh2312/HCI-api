@@ -221,8 +221,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   let refreshToken;
   try {
-    console.log(req.headers.authorization.split(" ")[1]);
-    console.log(req.cookies.jwt);
     token = req.headers.authorization.split(" ")[1];
     refreshToken = req.cookies.jwt;
   } catch (error) {

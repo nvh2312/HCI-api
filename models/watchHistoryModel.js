@@ -21,7 +21,7 @@ const watchHistorySchema = new mongoose.Schema({
 watchHistorySchema.pre(/^find/, function (next) {
   this.populate({
     path: "video",
-    select: "title channel duration thumbnail",
+    select: "title channel duration thumbnail description view",
   });
   next();
 });
