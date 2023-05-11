@@ -244,10 +244,15 @@ exports.videoFollowings = catchAsync(async (req, res, next) => {
   //     later,
   //   },
   // });
-  const today = moment().startOf("day").toDate();
-  const yesterday = moment().subtract(1, "days").startOf("day").toDate();
-  const startOfWeek = moment().startOf("week").toDate();
-  const startOfMonth = moment().startOf("month").toDate();
+  // const today = moment().startOf("day").toDate();
+  // const yesterday = moment().subtract(1, "days").startOf("day").toDate();
+  // const startOfWeek = moment().startOf("week").toDate();
+  // const startOfMonth = moment().startOf("month").toDate();
+  const now = new Date();
+  const today = new Date(today - 24 * 60 * 60 * 1000);
+  const yesterday = new Date(today - 2 * 24 * 60 * 60 * 1000);
+  const startOfWeek = new Date(today - 7 * 24 * 60 * 60 * 1000);
+  const startOfMonth = new Date(today - 30 * 24 * 60 * 60 * 1000);
   const filter = {
     channel: { $in: followings },
     isHidden: false,
