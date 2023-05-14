@@ -175,7 +175,7 @@ exports.analysis = catchAsync(async (req, res, next) => {
     {
       $group: {
         _id: {
-          $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          $dateToString: { format: "%d-%m-%Y", date: "$createdAt" },
         },
         count: { $sum: count },
       },
