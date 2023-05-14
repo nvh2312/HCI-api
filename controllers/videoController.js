@@ -315,10 +315,11 @@ exports.searchVideos = catchAsync(async (req, res, next) => {
   const today = new Date();
 
   if (keyword) {
-    filter["$text"] = { $search: keyword };
+    filter.title = { $regex: `.*${keyword}.*`, $options: "i" };
     user = await Channel.find({
       fullName: { $regex: `.*${keyword}.*`, $options: "i" },
       active: "active",
+      role: "user",
     });
   }
   if (duration_min && duration_max) {

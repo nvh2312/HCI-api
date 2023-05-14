@@ -77,6 +77,7 @@ exports.getChannel = catchAsync(async (req, res, next) => {
   let filter = {};
 
   filter.active = { $nin: ["ban", "verify"] };
+  filter.role = "user";
   let query = Channel.findById(req.params.id).where(filter);
   query = query.populate("subscribers").populate("followings");
   const doc = await query;
