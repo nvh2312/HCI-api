@@ -189,3 +189,36 @@ exports.analysis = catchAsync(async (req, res, next) => {
     data,
   });
 });
+exports.overview = catchAsync(async (req, res, next) => {
+  const channelId = req.channel.id;
+  const [stats, totalSub] = await Promise.all([
+    View.aggregate([
+      {
+        $lookup: {
+          from: "videos",
+          localField: "video",
+          foreignField: "_id",
+          as: "video",
+        },
+      },
+      { $match: { "video.channel": new ObjectId(channelId) } },
+      {
+        $group: {
+          _id: null,
+          totalViews: { $sum: 1 },
+          totalWatchedTime: { $sum: "$watchedTime" },
+        },
+      },
+    ]),
+    Subscriber.countDocuments({ channel: new ObjectId(channelId) }),
+  ]);
+  
+  res.status(200).json({
+    message: "success",
+    data: {
+      totalViews: stats[0].totalViews,
+      totalTime: Number((stats[0].totalWatchedTime / 3600).toFixed(2)),
+      totalSub,
+    },
+  });
+});

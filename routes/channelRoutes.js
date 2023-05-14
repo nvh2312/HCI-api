@@ -39,6 +39,7 @@ router.get("/get-channel/:id", channelController.getChannel);
 router.use(authController.protect);
 
 router.patch("/seen-notification", channelController.seenNotification);
+router.get("/overview", channelController.overview);
 router.get("/analysis", channelController.analysis);
 router.patch("/updateMyPassword", authController.updatePassword);
 router.get("/me", channelController.getMe, channelController.getChannel);
