@@ -111,8 +111,7 @@ channelSchema.pre("save", async function (next) {
 
 channelSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
-
-  this.passwordChangedAt = Date.now() - 30000;
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -138,7 +137,6 @@ channelSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-
     return JWTTimestamp < changedTimestamp;
   }
 

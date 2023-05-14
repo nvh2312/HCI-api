@@ -216,8 +216,8 @@ exports.overview = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "success",
     data: {
-      totalViews: stats[0].totalViews,
-      totalTime: Number((stats[0].totalWatchedTime / 3600).toFixed(2)),
+      totalViews: stats[0]?.totalViews||0,
+      totalTime: Number((stats[0]?.totalWatchedTime / 3600).toFixed(2))||0,
       totalSub,
     },
   });
