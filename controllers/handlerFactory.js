@@ -2,6 +2,7 @@ const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 const Comment = require("../models/commentModel");
+const FavoriteVideo = require("../models/favoriteVideoModel");
 //define storage for the images
 exports.setChannel = catchAsync(async (req, res, next) => {
   req.body.channel = req.channel;
@@ -78,6 +79,7 @@ exports.getAll = (Model, options) =>
       filter.active = { $nin: ["ban", "verify"] };
     }
     if (Model === Comment) filter.parent = null;
+    if (Model === FavoriteVideo) filter["video.title"] = { $ne: null };
     const features = new APIFeatures(
       Model.find(filter).populate(options),
       req.query

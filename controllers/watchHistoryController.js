@@ -22,16 +22,18 @@ exports.getAllWatchHistories = catchAsync(async (req, res, next) => {
   };
   videos.forEach((video) => {
     const date = video.createdAt;
-    if (date >= today) {
-      result.today.push(video);
-    } else if (date >= yesterday) {
-      result.yesterday.push(video);
-    } else if (date >= startOfWeek) {
-      result.thisWeek.push(video);
-    } else if (date >= startOfMonth) {
-      result.thisMonth.push(video);
-    } else {
-      result.older.push(video);
+    if (video.video) {
+      if (date >= today) {
+        result.today.push(video);
+      } else if (date >= yesterday) {
+        result.yesterday.push(video);
+      } else if (date >= startOfWeek) {
+        result.thisWeek.push(video);
+      } else if (date >= startOfMonth) {
+        result.thisMonth.push(video);
+      } else {
+        result.older.push(video);
+      }
     }
   });
   // SEND RESPONSE

@@ -106,16 +106,16 @@ exports.sendMailVerify = catchAsync(async (req, res, next) => {
   await channel.save({ validateBeforeSave: false });
 
   // 2) Send it to channel's email
-  const verifyURL = `https://youtube.onrender.com/verify`;
+  const verifyURL = `${req.protocol}://${req.get("host")}/verify`;
   const message = `Bạn là chủ tài khoản? Vui lòng xác nhận tài khoản tại:  ${verifyURL}.\nMã xác nhận: ${verifyToken}\n.Nếu không phải, vui lòng bỏ qua mail này!`;
   channel.password = undefined;
   console.log(verifyToken);
   try {
-    // await sendEmail({
-    //   email: channel.email,
-    //   subject: "verify channel",
-    //   message,
-    // });
+    await sendEmail({
+      email: channel.email,
+      subject: "verify channel",
+      message,
+    });
     res.status(201).json({
       data: {
         user: channel,
@@ -127,21 +127,21 @@ exports.sendMailVerify = catchAsync(async (req, res, next) => {
   }
 });
 
-const sendVerifyToken = async (channel, statusCode, res) => {
+const sendVerifyToken = async (channel, statusCode, res, req) => {
   // 1) create token to verify
   const verifyToken = channel.createVerifyToken();
   await channel.save({ validateBeforeSave: false });
   // 2) Send it to channel's email
-  const verifyURL = `https://youtube.onrender.com/verify`;
+  const verifyURL = `${req.protocol}://${req.get("host")}/verify`;
   const message = `Bạn là chủ tài khoản? Vui lòng xác nhận tài khoản tại:  ${verifyURL}.\nMã xác nhận: ${verifyToken}\n.Nếu không phải, vui lòng bỏ qua mail này!`;
   channel.password = undefined;
   console.log(verifyToken);
   try {
-    // await sendEmail({
-    //   email: channel.email,
-    //   subject: "verify channel",
-    //   message,
-    // });
+    await sendEmail({
+      email: channel.email,
+      subject: "verify channel",
+      message,
+    });
     res.status(statusCode).json({
       data: {
         user: channel,
@@ -184,7 +184,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
   });
-  sendVerifyToken(newChannel, 201, res);
+  sendVerifyToken(newChannel, 201, res, req);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -207,7 +207,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   // 3) Check if channel not verify, send code to gmail
   if (channel.active === "verify") {
-    sendVerifyToken(channel, 201, res);
+    sendVerifyToken(channel, 201, res, req);
   } else if (channel.active === "ban")
     return next(new AppError("Tài khoản đã bị khóa", 403));
   // 4) If everything ok, send token to client
@@ -323,16 +323,16 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await channel.save({ validateBeforeSave: false });
 
   // 3) Send it to channel's email
-  const resetURL = `${req.protocol}://${req.get("host")}/forgot-password`;
+  const resetURL = `${req.protocol}://${req.get("host")}/verify-reset-password`;
 
   const message = `Bạn quên mật khẩu? Mã xác nhận của bạn: ${resetToken}.\nĐổi mật khẩu mới tại : ${resetURL}.\nNếu không phải bạn, vui lòng bỏ qua email này!`;
 
   try {
-    // await sendEmail({
-    //   email: channel.email,
-    //   subject: "Your password reset token (valid for 10 min)",
-    //   message,
-    // });
+    await sendEmail({
+      email: channel.email,
+      subject: "Your password reset token (valid for 10 min)",
+      message,
+    });
 
     res.status(201).json({
       status: "success",
