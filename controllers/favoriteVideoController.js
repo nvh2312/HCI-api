@@ -5,7 +5,17 @@ const Channel = require("./../models/channelModel");
 const factory = require("./handlerFactory");
 const Video = require("../models/videoModel");
 
-exports.getAllFavoriteVideos = factory.getAll(FavoriteVideo);
+exports.getAllFavoriteVideos = catchAsync(async (req, res, next) => {
+  let filter;
+  if (req.params.channelId) filter = { channel: req.params.channelId };
+  const doc = await FavoriteVideo.find(filter).sort({ createdAt: -1 });
+  const filteredDoc = doc.filter((item) => item.video !== null);
+  res.status(200).json({
+    status: "success",
+    results: filteredDoc.length,
+    data: filteredDoc,
+  });
+});
 exports.createFavoriteVideo = catchAsync(async (req, res, next) => {
   const video = await Video.findOne({
     _id: req.body.video,
