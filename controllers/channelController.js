@@ -127,7 +127,7 @@ exports.banChannel = catchAsync(async (req, res, next) => {
   });
 });
 exports.analysis = catchAsync(async (req, res, next) => {
-  const timeRanges = req.query.timeRanges;
+  const timeRanges = req.query.date;
   const option = req.query.option;
   const model = option === "subscriber" ? Subscriber : View;
   const match = option === "subscriber" ? "channel" : "video.channel";
@@ -182,6 +182,7 @@ exports.analysis = catchAsync(async (req, res, next) => {
     },
     { $sort: { _id: 1 } },
   ];
+
   const doc = await model.aggregate(pipeline);
   const data = doc.map((item) => ({ date: item._id, count: item.count }));
   res.status(200).json({
@@ -212,12 +213,12 @@ exports.overview = catchAsync(async (req, res, next) => {
     ]),
     Subscriber.countDocuments({ channel: new ObjectId(channelId) }),
   ]);
-  
+
   res.status(200).json({
     message: "success",
     data: {
-      totalViews: stats[0]?.totalViews||0,
-      totalTime: Number((stats[0]?.totalWatchedTime / 3600).toFixed(2))||0,
+      totalViews: stats[0]?.totalViews || 0,
+      totalTime: Number((stats[0]?.totalWatchedTime / 3600).toFixed(2)) || 0,
       totalSub,
     },
   });

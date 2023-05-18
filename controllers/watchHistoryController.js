@@ -46,5 +46,11 @@ exports.deleteWatchHistory = factory.deleteOne(WatchHistory);
 exports.isOwner = factory.isOwner(WatchHistory);
 exports.deleteAllViews = catchAsync(async (req, res, next) => {
   await View.deleteMany();
+  //  const count = await View.countDocuments({video:"64663e793e70616298308285"});
+  //  console.log(count)/
+  // const t = new Date(1683863478676);
+  // await View.deleteMany({createdAt:t});
+  // const data = await View.findById("645dd54af55751ebd8e5808f")
+  // console.log(data?.createdAt.getTime())
   res.status(204).json();
 });
