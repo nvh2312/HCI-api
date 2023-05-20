@@ -8,6 +8,7 @@ const Video = require("../models/videoModel");
 const Subscriber = require("../models/subscriberModel");
 const { ObjectId } = require("mongodb");
 const View = require("../models/viewModel");
+const moment = require("moment");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -135,22 +136,22 @@ exports.analysis = catchAsync(async (req, res, next) => {
   let days;
   switch (timeRanges) {
     case "7days":
-      days = 7;
+      days = 6;
       break;
     case "28days":
-      days = 28;
+      days = 27;
       break;
     case "90days":
-      days = 90;
+      days = 89;
       break;
     case "365days":
-      days = 365;
+      days = 364;
       break;
     default:
-      days = 7;
+      days = 6;
   }
   const now = new Date();
-  const startDate = new Date(now - days * 24 * 60 * 60 * 1000);
+  const startDate = moment(now).subtract(days, "days").startOf("day").utc().toDate();
   const pipeline = [
     ...(option === "subscriber"
       ? []
