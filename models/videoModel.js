@@ -16,7 +16,7 @@ const videoSchema = new mongoose.Schema(
     dislike: [],
     createdAt: {
       type: Date,
-      default: Date.now(),
+      default: Date.now,
     },
     channel: {
       type: mongoose.Schema.Types.ObjectId,
